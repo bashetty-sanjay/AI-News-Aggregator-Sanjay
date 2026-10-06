@@ -11,6 +11,10 @@ def get_environment() -> str:
 
 
 def get_database_url() -> str:
+    use_sqlite = os.getenv("USE_SQLITE", "false").lower() in ("true", "1", "yes")
+    if use_sqlite:
+        return os.getenv("SQLITE_URL", "sqlite:///ai_news_aggregator.db")
+
     database_url = os.getenv("DATABASE_URL")
     if database_url:
         if database_url.startswith("postgres://"):
@@ -44,14 +48,28 @@ def get_database_info() -> dict:
         if len(parts) == 2:
             masked_url = f"{parts[0].split('://')[0]}://***@{parts[1]}"
 
+    host = "sqlite"
+    if "@" in url:
+        host = url.split("@")[-1].split("/")[0]
+    elif url.startswith("sqlite"):
+        host = "sqlite"
+
     return {
         "environment": env_type,
         "url_masked": masked_url,
-        "host": url.split("@")[-1].split("/")[0] if "@" in url else "localhost",
+        "host": host,
+        "is_sqlite": url.startswith("sqlite"),
     }
 
 
-engine = create_engine(get_database_url())
+def create_app_engine():
+    url = get_database_url()
+    if url.startswith("sqlite"):
+        return create_engine(url, connect_args={"check_same_thread": False})
+    return create_engine(url, pool_pre_ping=True)
+
+
+engine = create_app_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

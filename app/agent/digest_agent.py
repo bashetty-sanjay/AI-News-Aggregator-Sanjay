@@ -21,22 +21,18 @@ class DigestOutput(BaseModel):
 
 class DigestAgent(BaseAgent):
     def __init__(self):
-        super().__init__("gpt-4o-mini")
+        super().__init__(default_openai_model="gpt-4o-mini", default_gemini_model="gemini-2.5-flash")
         self.system_prompt = PROMPT
 
     def generate_digest(self, title: str, content: str, article_type: str) -> Optional[DigestOutput]:
         try:
             user_prompt = f"Create a digest for this {article_type}: \n Title: {title} \n Content: {content[:8000]}"
-
-            response = self.client.responses.parse(
-                model=self.model,
-                instructions=self.system_prompt,
+            return self.parse_structured(
+                user_prompt=user_prompt,
+                system_prompt=self.system_prompt,
+                output_class=DigestOutput,
                 temperature=0.7,
-                input=user_prompt,
-                text_format=DigestOutput
             )
-            
-            return response.output_parsed
         except Exception as e:
             print(f"Error generating digest: {e}")
             return None

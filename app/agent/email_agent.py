@@ -59,13 +59,14 @@ Keep it concise (2-3 sentences for the introduction), friendly, and professional
 
 class EmailAgent(BaseAgent):
     def __init__(self, user_profile: dict):
-        super().__init__("gpt-4o-mini")
+        super().__init__(default_openai_model="gpt-4o-mini", default_gemini_model="gemini-2.5-flash")
         self.user_profile = user_profile
 
     def generate_introduction(self, ranked_articles: List) -> EmailIntroduction:
+        current_date = datetime.now().strftime('%B %d, %Y')
         if not ranked_articles:
             return EmailIntroduction(
-                greeting=f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {datetime.now().strftime('%B %d, %Y')}.",
+                greeting=f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}.",
                 introduction="No articles were ranked today."
             )
         
@@ -75,7 +76,6 @@ class EmailAgent(BaseAgent):
             for idx, article in enumerate(top_articles)
         ])
         
-        current_date = datetime.now().strftime('%B %d, %Y')
         user_prompt = f"""Create an email introduction for {self.user_profile['name']} for {current_date}.
 
 Top 10 ranked articles:
@@ -84,22 +84,23 @@ Top 10 ranked articles:
 Generate a greeting and introduction that previews these articles."""
 
         try:
-            response = self.client.responses.parse(
-                model=self.model,
-                instructions=EMAIL_PROMPT,
+            intro = self.parse_structured(
+                user_prompt=user_prompt,
+                system_prompt=EMAIL_PROMPT,
+                output_class=EmailIntroduction,
                 temperature=0.7,
-                input=user_prompt,
-                text_format=EmailIntroduction
             )
-            
-            intro = response.output_parsed
+            if not intro:
+                intro = EmailIntroduction(
+                    greeting=f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}.",
+                    introduction="Here are the top 10 AI news articles ranked by relevance to your interests."
+                )
             if not intro.greeting.startswith(f"Hey {self.user_profile['name']}"):
                 intro.greeting = f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}."
             
             return intro
         except Exception as e:
             print(f"Error generating introduction: {e}")
-            current_date = datetime.now().strftime('%B %d, %Y')
             return EmailIntroduction(
                 greeting=f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}.",
                 introduction="Here are the top 10 AI news articles ranked by relevance to your interests."

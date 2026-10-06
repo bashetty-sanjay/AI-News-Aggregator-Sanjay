@@ -10,17 +10,19 @@
 ### Step 2: Deploy from GitHub
 1. In Render dashboard: **New** → **Blueprint**
 2. Connect GitHub (if not connected)
-3. Select repository: `ai-news-aggregator`
-4. Select branch: `deployment`
+3. Select repository: `AI-News-Aggregator-Sanjay`
+4. Select branch: `main`
 5. Click **Apply** (Render reads `render.yaml` automatically)
 
 ### Step 3: Set Environment Variables
-After services are created, go to `daily-digest-job` → **Environment** tab:
+After services are created, go to `daily-digest-job` → **Environment** tab and fill in:
 
 ```
-OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=your_gemini_api_key      # Free from aistudio.google.com
 MY_EMAIL=your.email@gmail.com
-APP_PASSWORD=your_16_char_app_password
+RECIPIENT_EMAIL=your.email@gmail.com
+USER_NAME=YourName
+APP_PASSWORD=your_16_char_app_password  # From myaccount.google.com/apppasswords
 ```
 
 **Note**: `DATABASE_URL` is auto-set by Render - don't add it manually!
@@ -33,13 +35,14 @@ APP_PASSWORD=your_16_char_app_password
 ## ✅ What Gets Created
 
 - **PostgreSQL Database**: `ai-news-aggregator-db` (free tier)
-- **Cron Job**: Runs `python main.py` daily at midnight UTC
+- **Cron Job**: Runs `python main.py` daily at 7:00 AM IST (`30 1 * * *` UTC)
 
 ## 📝 Schedule Customization
 
 Edit `render.yaml` to change schedule:
 ```yaml
-schedule: "0 8 * * *"  # 8 AM UTC instead of midnight
+schedule: "30 1 * * *"  # 7:00 AM IST (1:30 AM UTC)
+# or schedule: "0 7 * * *"  # 7:00 AM UTC
 ```
 
 Then push to GitHub - Render auto-updates.

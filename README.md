@@ -166,39 +166,58 @@ class CustomScraper:
    uv sync
    ```
 
-3. Configure environment variables (copy `app/example.env` to `.env`):
+3. Configure environment variables in `.env`:
    ```bash
-   OPENAI_API_KEY=your_key
-   MY_EMAIL=your_email@gmail.com
-   APP_PASSWORD=your_gmail_app_password
-   DATABASE_URL=postgresql://user:pass@host:port/db
-   ENVIRONMENT=LOCAL  # Optional: auto-detected from DATABASE_URL if contains "render.com"
-   
-   # Optional: Webshare Proxy (for YouTube transcript fetching)
-   # Get credentials from https://www.webshare.io/
-   WEBSHARE_USERNAME=your_username
-   WEBSHARE_PASSWORD=your_password
-   ```
-   
-   **Note**: Webshare proxy is optional. If not provided, YouTube transcript fetching will work without a proxy but may be rate-limited.
+   # Google Gemini API (100% FREE)
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-2.5-flash
 
-4. Initialize database:
+   # Email Configuration (Gmail SMTP)
+   MY_EMAIL=your_email@gmail.com
+   RECIPIENT_EMAIL=your_email@gmail.com
+   APP_PASSWORD=your_16_character_gmail_app_password
+   USER_NAME=YourName
+
+   # Database Configuration
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ai_news_aggregator
+   USE_SQLITE=false  # Set to true for quick local testing without PostgreSQL
+   ```
+
+   **Where to get your Free Gemini API Key:**
+   1. Visit **[Google AI Studio (aistudio.google.com)](https://aistudio.google.com/app/apikey)**.
+   2. Sign in with your Google account.
+   3. Click **"Create API key"** and copy the key into `GEMINI_API_KEY=`.
+
+   **Gmail App Password Setup:**
+   1. Enable 2-Step Verification in your [Google Account](https://myaccount.google.com/security).
+   2. Navigate to [App Passwords](https://myaccount.google.com/apppasswords).
+   3. Create an app password named `AI News Aggregator`.
+   4. Copy the generated 16-character code into `APP_PASSWORD=` in your `.env`.
+
+4. Run with Docker (Recommended for Database & App):
+   ```bash
+   # Start PostgreSQL and AI News Aggregator together:
+   docker compose up --build
+
+   # Or run PostgreSQL only in the background:
+   docker compose up -d postgres
+   ```
+
+5. Initialize database (when running locally):
    ```bash
    uv run python -m app.database.create_tables
-   ```
-   
-   Or check database connection:
-   ```bash
    uv run python -m app.database.check_connection
    ```
 
-5. Configure YouTube channels in `app/config.py`
-
-6. Update user profile in `app/profiles/user_profile.py`
-
 ### Running
 
-**Full pipeline:**
+**Send latest AI news update to email immediately:**
+```bash
+uv run python send_news_update.py
+```
+*(Scrapes live articles from OpenAI, Anthropic, and YouTube, compiles a styled HTML digest, and emails it to your configured RECIPIENT_EMAIL).*
+
+**Run full LLM pipeline:**
 ```bash
 uv run main.py
 ```
@@ -220,24 +239,12 @@ uv run python -m app.services.process_curator
 uv run python -m app.services.process_email
 ```
 
-## Deployment
+## Docker Usage
 
-### Render.com
-
-The project is configured for deployment on Render.com:
-
-1. **Database**: PostgreSQL service (auto-configured)
-2. **Cron Job**: Scheduled daily execution via `render.yaml`
-3. **Environment**: Automatically detected as PRODUCTION when `DATABASE_URL` contains "render.com" (no manual setting needed)
-
-See `RENDER_SETUP.md` for detailed deployment instructions.
-
-### Docker
-
-Build and run:
+Start everything with Docker Compose:
 ```bash
-docker build -t ai-news-aggregator .
-docker run --env-file .env ai-news-aggregator
+docker compose up -d postgres  # Start PostgreSQL database
+docker compose up app          # Run news aggregator pipeline
 ```
 
 ## Key Features

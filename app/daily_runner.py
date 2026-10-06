@@ -1,6 +1,14 @@
+import sys
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 from app.runner import run_scrapers
 from app.services.process_anthropic import process_anthropic_markdown
@@ -41,7 +49,7 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
         try:
             with engine.connect() as conn:
                 Base.metadata.create_all(engine)
-                logger.info("✓ Database tables verified/created")
+                logger.info("[OK] Database tables verified/created")
         except Exception as e:
             logger.error(f"Failed to create database tables: {e}")
             raise
@@ -54,7 +62,7 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
             "anthropic": len(scraping_results.get("anthropic", [])),
         }
         logger.info(
-            f"✓ Scraped {results['scraping']['youtube']} YouTube videos, "
+            f"[OK] Scraped {results['scraping']['youtube']} YouTube videos, "
             f"{results['scraping']['openai']} OpenAI articles, "
             f"{results['scraping']['anthropic']} Anthropic articles"
         )
@@ -63,7 +71,7 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
         anthropic_result = process_anthropic_markdown()
         results["processing"]["anthropic"] = anthropic_result
         logger.info(
-            f"✓ Processed {anthropic_result['processed']} Anthropic articles "
+            f"[OK] Processed {anthropic_result['processed']} Anthropic articles "
             f"({anthropic_result['failed']} failed)"
         )
 
@@ -71,7 +79,7 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
         youtube_result = process_youtube_transcripts()
         results["processing"]["youtube"] = youtube_result
         logger.info(
-            f"✓ Processed {youtube_result['processed']} transcripts "
+            f"[OK] Processed {youtube_result['processed']} transcripts "
             f"({youtube_result['unavailable']} unavailable)"
         )
 
@@ -79,7 +87,7 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
         digest_result = process_digests()
         results["digests"] = digest_result
         logger.info(
-            f"✓ Created {digest_result['processed']} digests "
+            f"[OK] Created {digest_result['processed']} digests "
             f"({digest_result['failed']} failed out of {digest_result['total']} total)"
         )
 
@@ -88,16 +96,16 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
         results["email"] = email_result
 
         if email_result.get("skipped"):
-            logger.info(f"✓ {email_result.get('message', 'No new digests to send')}")
+            logger.info(f"[OK] {email_result.get('message', 'No new digests to send')}")
             results["success"] = True
         elif email_result["success"]:
             logger.info(
-                f"✓ Email sent successfully with {email_result['articles_count']} articles"
+                f"[OK] Email sent successfully with {email_result['articles_count']} articles"
             )
             results["success"] = True
         else:
             logger.error(
-                f"✗ Failed to send email: {email_result.get('error', 'Unknown error')}"
+                f"[ERROR] Failed to send email: {email_result.get('error', 'Unknown error')}"
             )
 
     except Exception as e:

@@ -37,7 +37,7 @@ Rank articles from most relevant (rank 1) to least relevant. Ensure each article
 
 class CuratorAgent(BaseAgent):
     def __init__(self, user_profile: dict):
-        super().__init__("gpt-4.1")
+        super().__init__(default_openai_model="gpt-4.1", default_gemini_model="gemini-2.5-flash")
         self.user_profile = user_profile
         self.system_prompt = self._build_system_prompt()
 
@@ -75,15 +75,12 @@ Preferences:
 Provide a relevance score (0.0-10.0) and rank (1-{len(digests)}) for each article, ordered from most to least relevant."""
 
         try:
-            response = self.client.responses.parse(
-                model=self.model,
-                instructions=self.system_prompt,
+            ranked_list = self.parse_structured(
+                user_prompt=user_prompt,
+                system_prompt=self.system_prompt,
+                output_class=RankedDigestList,
                 temperature=0.3,
-                input=user_prompt,
-                text_format=RankedDigestList
             )
-            
-            ranked_list = response.output_parsed
             return ranked_list.articles if ranked_list else []
         except Exception as e:
             print(f"Error ranking digests: {e}")

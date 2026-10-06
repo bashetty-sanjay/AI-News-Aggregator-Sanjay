@@ -9,16 +9,25 @@ services:
     name: daily-digest-job
     env: docker
     dockerfilePath: ./Dockerfile
-    schedule: "0 5 * * *"
+    # 7:00 AM IST (UTC+5:30) = 1:30 AM UTC ("30 1 * * *"). Change to "0 7 * * *" if you meant 7:00 AM UTC.
+    schedule: "30 1 * * *"
     dockerCommand: python main.py
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: ai-news-aggregator-db
           property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: MY_EMAIL
+        sync: false
+      - key: RECIPIENT_EMAIL
+        sync: false
+      - key: USER_NAME
         sync: false
       - key: APP_PASSWORD
         sync: false

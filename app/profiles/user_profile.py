@@ -1,5 +1,7 @@
+import os
+
 USER_PROFILE = {
-    "name": "Dave",
+    "name": os.getenv("USER_NAME", "Sudheer"),
     "title": "AI Engineer & Researcher",
     "background": "Experienced AI engineer with deep interest in practical AI applications, research breakthroughs, and production-ready systems",
     "interests": [

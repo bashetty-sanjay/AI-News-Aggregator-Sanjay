@@ -71,15 +71,16 @@ To change when the daily digest runs:
 
 1. Edit `render.yaml`:
    ```yaml
-   schedule: "0 8 * * *"  # 8 AM UTC instead of midnight
+   schedule: "30 1 * * *"  # 7:00 AM IST (1:30 AM UTC)
+   # Or "0 7 * * *" for 7:00 AM UTC
    ```
 2. Push changes to GitHub
 3. Render will automatically update
 
-**Cron Schedule Format**: `minute hour day month weekday`
+**Cron Schedule Format**: `minute hour day month weekday` (all in UTC)
+- `30 1 * * *` = Daily at 7:00 AM IST (1:30 AM UTC)
+- `0 7 * * *` = Daily at 7:00 AM UTC
 - `0 0 * * *` = Daily at midnight UTC
-- `0 8 * * *` = Daily at 8 AM UTC
-- `0 0 * * 1` = Every Monday at midnight UTC
 
 ## Environment Variables Reference
 
@@ -121,8 +122,11 @@ To change when the daily digest runs:
 For local development, use docker-compose:
 
 ```bash
-cd docker
-docker compose up -d
+# Start PostgreSQL database in the background:
+docker compose up -d postgres
+
+# Or run PostgreSQL and the AI News Aggregator pipeline together:
+docker compose up --build
 ```
 
 This starts PostgreSQL locally. Set environment variables in `.env` file (copy from `app/example.env`).

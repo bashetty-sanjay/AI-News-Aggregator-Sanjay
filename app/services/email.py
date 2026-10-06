@@ -9,39 +9,47 @@ import markdown
 load_dotenv()
 
 MY_EMAIL = os.getenv("MY_EMAIL")
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", MY_EMAIL)
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 
 
 def send_email(subject: str, body_text: str, body_html: str = None, recipients: list = None):
+    sender_email = os.getenv("MY_EMAIL") or MY_EMAIL
+    app_password = os.getenv("APP_PASSWORD") or APP_PASSWORD
+    default_recipient = os.getenv("RECIPIENT_EMAIL") or sender_email
+
     if recipients is None:
-        if not MY_EMAIL:
-            raise ValueError("MY_EMAIL environment variable is not set")
-        recipients = [MY_EMAIL]
-    
+        recipients = [default_recipient]
+
     recipients = [r for r in recipients if r is not None]
-    if not recipients:
-        raise ValueError("No valid recipients provided")
-    
-    if not MY_EMAIL:
+    if not recipients or not recipients[0]:
+        raise ValueError("No valid recipient email provided. Please set RECIPIENT_EMAIL or MY_EMAIL in .env")
+
+    if not sender_email:
         raise ValueError("MY_EMAIL environment variable is not set")
-    if not APP_PASSWORD:
-        raise ValueError("APP_PASSWORD environment variable is not set")
-    
+    if not app_password:
+        raise ValueError(
+            "APP_PASSWORD environment variable is not set. "
+            "To send emails via Gmail SMTP, please generate a 16-character Google App Password "
+            "from https://myaccount.google.com/apppasswords and set APP_PASSWORD in your .env file."
+        )
+    app_password = app_password.replace(" ", "").strip()
+
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = MY_EMAIL
+    msg["From"] = sender_email
     msg["To"] = ", ".join(recipients)
-    
+
     part1 = MIMEText(body_text, "plain")
     msg.attach(part1)
-    
+
     if body_html:
         part2 = MIMEText(body_html, "html")
         msg.attach(part2)
-    
+
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(MY_EMAIL, APP_PASSWORD)
-        smtp.sendmail(MY_EMAIL, recipients, msg.as_string())
+        smtp.login(sender_email, app_password)
+        smtp.sendmail(sender_email, recipients, msg.as_string())
 
 
 def markdown_to_html(markdown_text: str) -> str:
@@ -233,11 +241,24 @@ def digest_to_html(digest_response) -> str:
 </html>"""
 
 
-def send_email_to_self(subject: str, body: str):
-    if not MY_EMAIL:
-        raise ValueError("MY_EMAIL environment variable is not set. Please set it in your .env file.")
-    send_email(subject, body, recipients=[MY_EMAIL])
+def send_email_to_self(subject: str, body: str, body_html: str = None):
+    target = os.getenv("RECIPIENT_EMAIL") or os.getenv("MY_EMAIL")
+    if not target:
+        raise ValueError("Neither RECIPIENT_EMAIL nor MY_EMAIL is set in .env")
+    send_email(subject, body, body_html=body_html, recipients=[target])
 
 
 if __name__ == "__main__":
-    send_email_to_self("Test from Python", "Hello from my script.")
+    import sys
+    target = os.getenv("RECIPIENT_EMAIL") or os.getenv("MY_EMAIL")
+    print(f"Testing email sending to {target}...")
+    try:
+        send_email_to_self(
+            "Test from AI News Aggregator",
+            "This is a test notification from your AI News Aggregator system.",
+            "<h3>AI News Aggregator Test</h3><p>Your email configuration is working successfully!</p>"
+        )
+        print("[OK] Test email sent successfully!")
+    except Exception as e:
+        print(f"[ERROR] Could not send test email: {e}")
+        sys.exit(1)
