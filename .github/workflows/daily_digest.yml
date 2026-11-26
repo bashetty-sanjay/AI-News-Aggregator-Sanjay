@@ -1,4 +1,4 @@
-name: Daily AI News Digest
+name: Daily News Digest Trigger
 
 on:
   schedule:
@@ -7,31 +7,10 @@ on:
   workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
 
 jobs:
-  send-digest:
+  trigger-digest:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-
-      - name: Install dependencies
-        run: uv sync --frozen
-
-      - name: Run Daily AI News Pipeline
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-2.5-flash
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          MY_EMAIL: ${{ secrets.MY_EMAIL }}
-          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
-          USER_NAME: ${{ secrets.USER_NAME || 'Sanjay' }}
-          USE_SQLITE: "true"
-        run: uv run main.py
+      - name: Trigger News2U Daily Digest
+        run: |
+          echo "Pinging News2U Web Service to scrape, curate, and send daily digests..."
+          curl -f -s -X POST https://news2u.onrender.com/api/cron/run || curl -f -s https://news2u.onrender.com/api/cron/run

@@ -215,6 +215,34 @@ async def list_subscribers_summary():
         )
 
 
+@app.get("/api/cron/run")
+@app.post("/api/cron/run")
+async def trigger_cron_pipeline(secret: Optional[str] = None):
+    """
+    Trigger the daily scraping, ranking, and email pipeline.
+    Can be called manually from browser, via cron-job.org, or via GitHub Actions.
+    """
+    expected_secret = os.getenv("CRON_SECRET")
+    if expected_secret and secret != expected_secret:
+        raise HTTPException(status_code=403, detail="Invalid cron secret")
+
+    try:
+        import asyncio
+        from app.daily_runner import run_daily_pipeline
+        result = await asyncio.to_thread(run_daily_pipeline, hours=24, top_n=10)
+        return {
+            "success": True,
+            "message": "Daily digest pipeline executed successfully",
+            "result": result,
+        }
+    except Exception as e:
+        logger.error(f"Cron pipeline execution failed: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"success": False, "error": str(e)},
+        )
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", "8000"))
