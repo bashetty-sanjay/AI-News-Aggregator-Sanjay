@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "feedparser>=6.0.12",
+    "fastapi>=0.115.0",
     "google-genai>=2.28.0",
     "html-to-markdown>=2.7.1",
     "markdown>=3.7.0",
@@ -15,6 +16,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
     "sqlalchemy>=2.0.44",
+    "uvicorn>=0.32.0",
     "youtube-transcript-api>=1.2.3",
 ]
 

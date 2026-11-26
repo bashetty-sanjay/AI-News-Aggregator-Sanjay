@@ -1,8 +1,22 @@
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Text
+from sqlalchemy import Column, String, DateTime, Text, Boolean, Integer
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
+
+class Subscriber(Base):
+    __tablename__ = "subscribers"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    priority_1 = Column(String(50), nullable=False, default="openai")
+    priority_2 = Column(String(50), nullable=False, default="anthropic")
+    priority_3 = Column(String(50), nullable=False, default="youtube")
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class YouTubeVideo(Base):

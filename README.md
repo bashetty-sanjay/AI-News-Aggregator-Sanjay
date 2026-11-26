@@ -217,6 +217,12 @@ uv run python send_news_update.py
 ```
 *(Scrapes live articles from OpenAI, Anthropic, and YouTube, compiles a styled HTML digest, and emails it to your configured RECIPIENT_EMAIL).*
 
+**Run Web Landing Page & Subscription Server:**
+```bash
+uv run uvicorn app.web:app --reload --port 8000
+```
+Open [http://localhost:8000](http://localhost:8000) to view the landing page and subscribe with custom source priorities (OpenAI, Anthropic, YouTube).
+
 **Run full LLM pipeline:**
 ```bash
 uv run main.py

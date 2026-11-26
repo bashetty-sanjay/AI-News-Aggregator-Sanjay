@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 829.8089999999997 1396.7" width="829.8089999999997" height="1396.7" style="--bg:#18181B;--fg:#F4F4F5;--line:#71717A;--muted:#A1A1AA;--surface:#27272A;--border:#3F3F46;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="1_User_Onboarding" data-label="1. User Onboarding">
+  <rect x="40" y="841.4" width="731.8089999999999" height="250.1" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="841.4" width="731.8089999999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="855.4" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">1. User Onboarding</text>
+</g>
+<g class="subgraph" data-id="2_MultiTenant_Database" data-label="2. Multi-Tenant Database">
+  <rect x="267.783" y="1219.8" width="263.64599999999996" height="110.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="267.783" y="1219.8" width="263.64599999999996" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="279.783" y="1233.8" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">2. Multi-Tenant Database</text>
+</g>
+<g class="subgraph" data-id="3_Efficient_AI_Pipeline" data-label="3. Efficient AI Pipeline">
+  <rect x="288.0848333333333" y="40" width="179.17200000000003" height="516.2" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="288.0848333333333" y="40" width="179.17200000000003" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="300.0848333333333" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">3. Efficient AI Pipeline</text>
+</g>
+<g class="subgraph" data-id="4_Personalized_Broadcast" data-label="4. Personalized Broadcast">
+  <rect x="317.80049999999994" y="616.2" width="163.611" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="317.80049999999994" y="616.2" width="163.611" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="329.80049999999994" y="630.2" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">4. Personalized Broadcast</text>
+</g>
+<polyline class="edge" data-from="FE" data-to="DB" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Save Profiles" points="399.60599999999994,1075.5 399.606,1263.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="DB" data-to="Engine" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="399.606,1314.7 399.6059999999999,1348.7 781.8089999999997,1348.7 781.8089999999997,598.2 421.54116666666647,598.2 421.5411666666666,660.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="DB_Digests" data-to="Engine" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="377.6708333333333,540.2 377.67083333333323,660.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Engine" data-to="U1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Personalized Email A" points="366.7032499999999,697.1 366.7032499999998,755.1 217.58349999999984,755.1 217.58349999999984,823.4 157.00299999999993,823.4 157.003,885.4" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Engine" data-to="U2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Personalized Email B" points="399.60599999999994,697.1 399.60599999999994,885.4" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Engine" data-to="U3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Personalized Email C" points="432.50874999999996,697.1 432.50874999999985,755.1 648.5074999999998,755.1 648.5074999999999,885.4" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="U1" data-to="FE" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Picks Priorities" points="157.003,922.3 157.003,1002.5999999999999 354.2914999999999,1002.5999999999999 354.2914999999999,1038.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="U2" data-to="FE" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Picks Priorities" points="399.60599999999994,922.3 399.60599999999994,1038.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="U3" data-to="FE" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Picks Priorities" points="648.5074999999999,922.3 648.5074999999999,1002.5999999999999 444.92049999999995,1002.5999999999999 444.92049999999995,1038.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S" data-to="DB_Articles" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="377.6708333333333,120.9 377.6708333333333,168.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="DB_Articles" data-to="Gemini" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Summarize ONCE" points="377.6708333333333,219.8 377.6708333333333,336.1" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Gemini" data-to="DB_Digests" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Save Summaries" points="377.6708333333333,373 377.6708333333333,489.3" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="FE" data-to="DB" data-label="Save Profiles">
+  <rect x="358.6059999999999" y="1140.5" width="81.20800000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="399.20999999999987" y="1155.65" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Save Profiles</text>
+</g>
+<g class="edge-label" data-from="Engine" data-to="U1" data-label="Personalized Email A">
+  <rect x="158.58349999999996" y="762.1" width="117.44200000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="217.30449999999996" y="777.25" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Personalized Email A</text>
+</g>
+<g class="edge-label" data-from="Engine" data-to="U2" data-label="Personalized Email B">
+  <rect x="340.606" y="762.1" width="117.44200000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="399.327" y="777.25" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Personalized Email B</text>
+</g>
+<g class="edge-label" data-from="Engine" data-to="U3" data-label="Personalized Email C">
+  <rect x="589.5074999999999" y="762.1" width="117.44200000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="648.2284999999999" y="777.25" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Personalized Email C</text>
+</g>
+<g class="edge-label" data-from="U1" data-to="FE" data-label="Picks Priorities">
+  <rect x="111.50299999999999" y="965.3000000000001" width="90.71200000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="156.859" y="980.45" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Picks Priorities</text>
+</g>
+<g class="edge-label" data-from="U2" data-to="FE" data-label="Picks Priorities">
+  <rect x="354.10599999999994" y="965.3000000000001" width="90.71200000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="399.46199999999993" y="980.45" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Picks Priorities</text>
+</g>
+<g class="edge-label" data-from="U3" data-to="FE" data-label="Picks Priorities">
+  <rect x="603.0074999999999" y="965.3000000000001" width="90.71200000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="648.3634999999999" y="980.45" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Picks Priorities</text>
+</g>
+<g class="edge-label" data-from="DB_Articles" data-to="Gemini" data-label="Summarize ONCE">
+  <rect x="327.1708333333333" y="262.80000000000007" width="100.216" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="377.2788333333333" y="277.95000000000005" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Summarize ONCE</text>
+</g>
+<g class="edge-label" data-from="Gemini" data-to="DB_Digests" data-label="Save Summaries">
+  <rect x="329.1708333333333" y="416" width="96.65200000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="377.4968333333333" y="431.15" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Save Summaries</text>
+</g>
+<g class="node" data-id="U1" data-label="User A: Loves AI Research" data-shape="rectangle">
+  <rect x="56" y="885.4" width="202.00599999999997" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="157.003" y="903.85" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">User A: Loves AI Research</text>
+</g>
+<g class="node" data-id="FE" data-label="Frontend Landing Page" data-shape="rectangle">
+  <rect x="308.977" y="1038.6" width="181.25799999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="399.606" y="1057.05" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Frontend Landing Page</text>
+</g>
+<g class="node" data-id="U2" data-label="User B: Loves YouTube Videos" data-shape="rectangle">
+  <rect x="286.006" y="885.4" width="227.19999999999996" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="399.60599999999994" y="903.85" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">User B: Loves YouTube Videos</text>
+</g>
+<g class="node" data-id="U3" data-label="User C: Loves Cybersecurity" data-shape="rectangle">
+  <rect x="541.2059999999999" y="885.4" width="214.60299999999995" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="648.5074999999999" y="903.85" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">User C: Loves Cybersecurity</text>
+</g>
+<g class="node" data-id="DB" data-label="PostgreSQL: 'subscribers' table" data-shape="cylinder">
+  <rect x="283.783" y="1270.8" width="231.64599999999996" height="36.900000000000006" fill="var(--_node-fill)" stroke="none" />
+  <line x1="283.783" y1="1270.8" x2="283.783" y2="1307.7" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="515.429" y1="1270.8" x2="515.429" y2="1307.7" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="399.606" cy="1307.7" rx="115.82299999999998" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="399.606" cy="1270.8" rx="115.82299999999998" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="399.606" y="1289.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">PostgreSQL: &#39;subscribers&#39; table</text>
+</g>
+<g class="node" data-id="S" data-label="Scrapers" data-shape="rectangle">
+  <rect x="327.7968333333333" y="84" width="99.74799999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="377.67083333333335" y="102.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Scrapers</text>
+</g>
+<g class="node" data-id="DB_Articles" data-label="Raw Articles" data-shape="cylinder">
+  <rect x="320.0163333333333" y="175.9" width="115.30900000000001" height="36.900000000000006" fill="var(--_node-fill)" stroke="none" />
+  <line x1="320.0163333333333" y1="175.9" x2="320.0163333333333" y2="212.8" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="435.32533333333333" y1="175.9" x2="435.32533333333333" y2="212.8" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="377.6708333333333" cy="212.8" rx="57.654500000000006" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="377.6708333333333" cy="175.9" rx="57.654500000000006" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="377.6708333333333" y="194.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Raw Articles</text>
+</g>
+<g class="node" data-id="Gemini" data-label="Gemini Flash" data-shape="rectangle">
+  <rect x="319.27533333333326" y="336.1" width="116.791" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="377.67083333333323" y="354.55" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Gemini Flash</text>
+</g>
+<g class="node" data-id="DB_Digests" data-label="Shared AI Digests" data-shape="cylinder">
+  <rect x="304.0848333333333" y="496.3" width="147.17200000000003" height="36.900000000000006" fill="var(--_node-fill)" stroke="none" />
+  <line x1="304.0848333333333" y1="496.3" x2="304.0848333333333" y2="533.2" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="451.2568333333333" y1="496.3" x2="451.2568333333333" y2="533.2" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="377.6708333333333" cy="533.2" rx="73.58600000000001" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="377.6708333333333" cy="496.3" rx="73.58600000000001" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="377.6708333333333" y="514.75" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Shared AI Digests</text>
+</g>
+<g class="node" data-id="Engine" data-label="Curator Engine" data-shape="rectangle">
+  <rect x="333.80049999999994" y="660.2" width="131.611" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="399.60599999999994" y="678.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Curator Engine</text>
+</g>
+</svg>

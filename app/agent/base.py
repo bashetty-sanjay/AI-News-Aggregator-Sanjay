@@ -38,33 +38,45 @@ class BaseAgent(ABC):
     ) -> Optional[T]:
         if self.provider == "gemini":
             from google.genai import types
-            models_to_try = [self.model, "gemini-2.0-flash", "gemini-1.5-flash"]
+            models_to_try = [self.model, "gemini-2.5-flash-lite", "gemini-2.0-flash"]
             # Deduplicate while preserving order
             models_to_try = list(dict.fromkeys(models_to_try))
 
+            import time
+            import re
+
             last_error = None
             for model_candidate in models_to_try:
-                try:
-                    response = self.gemini_client.models.generate_content(
-                        model=model_candidate,
-                        contents=user_prompt,
-                        config=types.GenerateContentConfig(
-                            system_instruction=system_prompt,
-                            response_mime_type="application/json",
-                            response_schema=output_class,
-                            temperature=temperature,
-                        ),
-                    )
-                    if hasattr(response, "parsed") and isinstance(response.parsed, output_class):
-                        return response.parsed
-                    if response.text:
-                        return output_class.model_validate_json(response.text)
-                except Exception as e:
-                    last_error = e
-                    if "503" in str(e) or "high demand" in str(e).lower():
-                        continue  # Try next model candidate
-                    else:
-                        break
+                for attempt in range(3):
+                    try:
+                        response = self.gemini_client.models.generate_content(
+                            model=model_candidate,
+                            contents=user_prompt,
+                            config=types.GenerateContentConfig(
+                                system_instruction=system_prompt,
+                                response_mime_type="application/json",
+                                response_schema=output_class,
+                                temperature=temperature,
+                            ),
+                        )
+                        if hasattr(response, "parsed") and isinstance(response.parsed, output_class):
+                            return response.parsed
+                        if response.text:
+                            return output_class.model_validate_json(response.text)
+                    except Exception as e:
+                        last_error = e
+                        err_str = str(e)
+                        if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                            delay = 7.0
+                            delay_match = re.search(r"retry in (\d+(?:\.\d+)?)s", err_str)
+                            if delay_match:
+                                delay = min(float(delay_match.group(1)) + 2.0, 25.0)
+                            time.sleep(delay)
+                            continue  # retry current model
+                        elif "503" in err_str or "high demand" in err_str.lower():
+                            break  # try next model candidate
+                        else:
+                            break  # other error, stop attempts for this model
 
             print(f"[Gemini Error]: {last_error}")
             return None

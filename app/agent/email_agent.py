@@ -76,12 +76,16 @@ class EmailAgent(BaseAgent):
             for idx, article in enumerate(top_articles)
         ])
         
+        count = len(top_articles)
+        count_label = f"top {count}" if count > 1 else "latest"
         user_prompt = f"""Create an email introduction for {self.user_profile['name']} for {current_date}.
 
-Top 10 ranked articles:
+The {count_label} ranked articles ({count} total):
 {article_summaries}
 
 Generate a greeting and introduction that previews these articles."""
+
+        default_intro = f"Here are the {count_label} AI news articles ranked by relevance to your interests." if count > 1 else "Here is the latest AI news update ranked by relevance to your interests."
 
         try:
             intro = self.parse_structured(
@@ -93,7 +97,7 @@ Generate a greeting and introduction that previews these articles."""
             if not intro:
                 intro = EmailIntroduction(
                     greeting=f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}.",
-                    introduction="Here are the top 10 AI news articles ranked by relevance to your interests."
+                    introduction=default_intro
                 )
             if not intro.greeting.startswith(f"Hey {self.user_profile['name']}"):
                 intro.greeting = f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}."
@@ -103,7 +107,7 @@ Generate a greeting and introduction that previews these articles."""
             print(f"Error generating introduction: {e}")
             return EmailIntroduction(
                 greeting=f"Hey {self.user_profile['name']}, here is your daily digest of AI news for {current_date}.",
-                introduction="Here are the top 10 AI news articles ranked by relevance to your interests."
+                introduction=default_intro
             )
 
     def create_email_digest(self, ranked_articles: List[dict], limit: int = 10) -> EmailDigest:

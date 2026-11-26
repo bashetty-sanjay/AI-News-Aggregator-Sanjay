@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from .models import YouTubeVideo, OpenAIArticle, AnthropicArticle, Digest
+from .models import YouTubeVideo, OpenAIArticle, AnthropicArticle, Digest, Subscriber
 from .connection import get_session
 
 
@@ -328,3 +328,82 @@ class Repository:
         )
         self.session.commit()
         return updated
+
+    # ==========================================
+    # Subscriber Management
+    # ==========================================
+
+    def create_or_update_subscriber(
+        self,
+        name: str,
+        email: str,
+        priority_1: str = "openai",
+        priority_2: str = "anthropic",
+        priority_3: str = "youtube",
+    ) -> Subscriber:
+        """Create a new subscriber or update priorities if already registered."""
+        clean_email = email.strip().lower()
+        clean_name = name.strip() or clean_email.split("@")[0]
+
+        existing = (
+            self.session.query(Subscriber)
+            .filter(Subscriber.email == clean_email)
+            .first()
+        )
+
+        if existing:
+            existing.name = clean_name
+            existing.priority_1 = priority_1.strip().lower()
+            existing.priority_2 = priority_2.strip().lower()
+            existing.priority_3 = priority_3.strip().lower()
+            existing.is_active = True
+            existing.updated_at = datetime.now(timezone.utc)
+            self.session.commit()
+            return existing
+
+        subscriber = Subscriber(
+            name=clean_name,
+            email=clean_email,
+            priority_1=priority_1.strip().lower(),
+            priority_2=priority_2.strip().lower(),
+            priority_3=priority_3.strip().lower(),
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        self.session.add(subscriber)
+        self.session.commit()
+        return subscriber
+
+    def get_active_subscribers(self) -> List[Subscriber]:
+        """Retrieve all active subscribers."""
+        return (
+            self.session.query(Subscriber)
+            .filter(Subscriber.is_active.is_(True))
+            .order_by(Subscriber.created_at.asc())
+            .all()
+        )
+
+    def get_subscriber_by_email(self, email: str) -> Optional[Subscriber]:
+        """Find a subscriber by email address."""
+        clean_email = email.strip().lower()
+        return (
+            self.session.query(Subscriber)
+            .filter(Subscriber.email == clean_email)
+            .first()
+        )
+
+    def unsubscribe(self, email: str) -> bool:
+        """Deactivate a subscriber."""
+        clean_email = email.strip().lower()
+        sub = (
+            self.session.query(Subscriber)
+            .filter(Subscriber.email == clean_email)
+            .first()
+        )
+        if sub:
+            sub.is_active = False
+            sub.updated_at = datetime.now(timezone.utc)
+            self.session.commit()
+            return True
+        return False

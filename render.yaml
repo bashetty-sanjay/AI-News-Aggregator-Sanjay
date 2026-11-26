@@ -5,13 +5,16 @@ databases:
     plan: free
 
 services:
-  - type: cron
-    name: daily-digest-job
+  # -------------------------------------------------------------
+  # 1. Web Service (Landing Page & Multi-User Subscription API)
+  # -------------------------------------------------------------
+  - type: web
+    name: ai-news-aggregator-web
     env: docker
     dockerfilePath: ./Dockerfile
-    # 7:00 AM IST (UTC+5:30) = 1:30 AM UTC ("30 1 * * *"). Change to "0 7 * * *" if you meant 7:00 AM UTC.
-    schedule: "30 1 * * *"
-    dockerCommand: python main.py
+    dockerCommand: uvicorn app.web:app --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -25,10 +28,40 @@ services:
         sync: false
       - key: MY_EMAIL
         sync: false
-      - key: RECIPIENT_EMAIL
+      - key: APP_PASSWORD
         sync: false
       - key: USER_NAME
         sync: false
-      - key: APP_PASSWORD
+      - key: RECIPIENT_EMAIL
         sync: false
 
+  # -------------------------------------------------------------
+  # 2. Daily Cron Job (Scrapes, Ranks & Dispatches Personalized Digests)
+  # -------------------------------------------------------------
+  - type: cron
+    name: daily-digest-job
+    env: docker
+    dockerfilePath: ./Dockerfile
+    # 7:00 AM IST (UTC+5:30) = 1:30 AM UTC ("30 1 * * *"). Change to "0 7 * * *" if you prefer 7:00 AM UTC.
+    schedule: "30 1 * * *"
+    dockerCommand: python main.py
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-news-aggregator-db
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: MY_EMAIL
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: USER_NAME
+        sync: false
+      - key: RECIPIENT_EMAIL
+        sync: false

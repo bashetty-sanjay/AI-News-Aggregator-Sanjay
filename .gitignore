@@ -64,7 +64,9 @@ target/
 *.rdb
 
 # Previews
-*.html
+*_preview.html
+latest_*.html
+!app/templates/**
 
 # Pycharm
 .idea

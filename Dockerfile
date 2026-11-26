@@ -14,10 +14,13 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 
-RUN uv sync --frozen --no-install-project
+# Install project dependencies into system environment
+RUN uv pip install --system -e .
 
 COPY . .
 
-CMD ["uv", "run", "main.py"]
+EXPOSE 8000
+
+CMD ["uvicorn", "app.web:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,67 +1,111 @@
-# Quick Render Setup Guide
+# Render Deployment & Architecture Guide
 
-## 🚀 Quick Start (5 minutes)
+Deploy your multi-user, personalized AI News Aggregator on **Render** in just a few minutes with our unified Blueprint (`render.yaml`).
 
-### Step 1: Create Render Account
-1. Go to https://render.com
-2. Sign up (free account works)
-3. Verify email
+---
 
-### Step 2: Deploy from GitHub
-1. In Render dashboard: **New** → **Blueprint**
-2. Connect GitHub (if not connected)
-3. Select repository: `AI-News-Aggregator-Sanjay`
-4. Select branch: `main`
-5. Click **Apply** (Render reads `render.yaml` automatically)
+## 🏛 Architecture Overview
 
-### Step 3: Set Environment Variables
-After services are created, go to `daily-digest-job` → **Environment** tab and fill in:
+When deployed on Render, your system runs as three tightly integrated services:
 
 ```
-GEMINI_API_KEY=your_gemini_api_key      # Free from aistudio.google.com
-MY_EMAIL=your.email@gmail.com
-RECIPIENT_EMAIL=your.email@gmail.com
-USER_NAME=YourName
-APP_PASSWORD=your_16_char_app_password  # From myaccount.google.com/apppasswords
+[ Public Subscribers ]
+        │
+        ▼
+┌─────────────────────────────────┐
+│   Web Service (FastAPI)         │  --> Serves Dark Charcoal & Amber Gold landing page
+│   ai-news-aggregator-web        │  --> Collects Name, Email & 1st/2nd/3rd priorities
+└───────────────┬─────────────────┘
+                │ saves subscribers
+                ▼
+┌─────────────────────────────────┐
+│   Managed PostgreSQL Database   │  --> Stores articles, transcripts, AI digests & subscribers
+│   ai-news-aggregator-db         │
+└───────────────▲─────────────────┘
+                │ reads & queries
+┌───────────────┴─────────────────┐
+│   Daily Cron Job                │  --> Runs every morning at 7:00 AM IST (1:30 AM UTC)
+│   daily-digest-job              │  --> Scrapes OpenAI, Anthropic, YouTube
+│                                 │  --> Curates and tailors digests per subscriber's priorities
+│                                 │  --> Dispatches personalized HTML emails via Gmail SMTP
+└─────────────────────────────────┘
 ```
 
-**Note**: `DATABASE_URL` is auto-set by Render - don't add it manually!
+---
 
-### Step 4: Test
-1. Go to `daily-digest-job` → **Logs**
-2. Click **Manual Deploy** to test immediately
-3. Check your email inbox
+## 🚀 Quick Start Deployment (5 Minutes)
 
-## ✅ What Gets Created
+### Step 1: Push Code to GitHub
+Ensure all recent changes are committed and pushed to your GitHub repository:
+```bash
+git add .
+git commit -m "Add landing page, multi-subscriber priority ranking, and Render blueprint"
+git push origin main
+```
 
-- **PostgreSQL Database**: `ai-news-aggregator-db` (free tier)
-- **Cron Job**: Runs `python main.py` daily at 7:00 AM IST (`30 1 * * *` UTC)
+### Step 2: Deploy Blueprint on Render
+1. Log in to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** → Select **Blueprint**.
+3. Connect your GitHub repository (`AI-News-Aggregator-Sanjay`).
+4. Select the `main` branch.
+5. Click **Apply**.
+   Render will automatically detect `render.yaml` and provision:
+   - **PostgreSQL Database** (`ai-news-aggregator-db`)
+   - **Web Service** (`ai-news-aggregator-web`)
+   - **Daily Cron Job** (`daily-digest-job`)
 
-## 📝 Schedule Customization
+---
 
-Edit `render.yaml` to change schedule:
+### Step 3: Configure Environment Variables
+In the Render dashboard, go to the Environment section for **both** the Web Service and the Cron Job (or set them under an Environment Group):
+
+| Variable | Description | Example |
+|---|---|---|
+| `GEMINI_API_KEY` | Google AI Studio API key | `AIzaSy...` |
+| `GEMINI_MODEL` | Gemini model name | `gemini-2.5-flash` |
+| `MY_EMAIL` | Sender Gmail address | `your.email@gmail.com` |
+| `APP_PASSWORD` | 16-character Google App Password | `xxxx yyyy zzzz wwww` |
+| `USER_NAME` | Owner / System sender name | `Sanjay` |
+| `OPENAI_API_KEY` | (Optional) OpenAI API key for fallback | `sk-proj-...` |
+| `DATABASE_URL` | **Auto-configured by Render** | *Do not edit* |
+
+> [!IMPORTANT]
+> **Subscribers never enter their Google passwords.**
+> Your central server sends all outgoing emails using the credentials above. Subscribers only submit their name, email, and their 3 ranked source priorities.
+
+---
+
+## 🧪 Local Testing
+
+You can run and test everything locally before or after deploying:
+
+### 1. Launch the Frontend & API Server
+```bash
+uv run uvicorn app.web:app --reload --port 8000
+```
+Open your browser at **`http://localhost:8000`**:
+- View the executive Dark Charcoal & Amber Gold landing page.
+- Test subscribing with your email and prioritized sources (e.g. #1 OpenAI, #2 Anthropic, #3 YouTube).
+- Health check is live at **`http://localhost:8000/health`**.
+
+### 2. Run the Full Daily Pipeline Manually
+```bash
+uv run python main.py
+```
+This will:
+1. Ensure all database tables exist (including `subscribers`).
+2. Scrape OpenAI, Anthropic, and YouTube sources.
+3. Generate digests with Google Gemini.
+4. Read active subscribers and their priority preferences.
+5. Generate a personalized briefing for each subscriber ordered by their chosen priorities.
+6. Deliver the email via Gmail SMTP.
+
+---
+
+## ⏰ Changing the Schedule
+To change when the daily briefing sends, edit `schedule` in `render.yaml`:
 ```yaml
 schedule: "30 1 * * *"  # 7:00 AM IST (1:30 AM UTC)
-# or schedule: "0 7 * * *"  # 7:00 AM UTC
 ```
-
-Then push to GitHub - Render auto-updates.
-
-## 🔍 Troubleshooting
-
-**Database connection fails?**
-- Check `DATABASE_URL` is set (should be automatic)
-- Verify database service is running
-
-**Email not sending?**
-- Verify Gmail app password (not regular password)
-- Check `MY_EMAIL` and `APP_PASSWORD` are correct
-
-**Cron not running?**
-- Check logs in Render dashboard
-- Verify schedule syntax
-
-## 📚 Full Documentation
-
-See `DEPLOYMENT.md` for detailed instructions.
-
+For example, for 8:00 AM IST: `schedule: "30 2 * * *"`.
+Commit and push to trigger an automatic update on Render.
