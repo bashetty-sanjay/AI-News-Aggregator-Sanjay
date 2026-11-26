@@ -249,7 +249,7 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
                 pass
 
             date_str = digest_response.introduction.greeting.split("for ")[-1] if "for " in digest_response.introduction.greeting else "Today"
-            subject = f"Daily AI News Digest - {date_str}"
+            subject = f"NEWS2U | Daily AI News Digest - {date_str}"
 
             send_email(
                 subject=subject,

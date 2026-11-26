@@ -219,7 +219,7 @@ def digest_to_html(digest_response) -> str:
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily AI News Digest</title>
+    <title>NEWS2U - Daily AI Digest</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #121316; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; color: #f3f4f6;">
     <div style="background-color: #121316; padding: 36px 12px;">
@@ -231,7 +231,7 @@ def digest_to_html(digest_response) -> str:
                         <tr>
                             <td>
                                 <div style="display: inline-block; background-color: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; margin-bottom: 14px;">
-                                    ⚡ AI INTELLIGENCE DIGEST
+                                    ⚡ NEWS2U &bull; AI INTELLIGENCE DIGEST
                                 </div>
                                 <div style="color: #9ca3af; font-size: 12px; font-weight: 500; margin-bottom: 8px;">
                                     {date_str} &bull; Executive Briefing
@@ -280,7 +280,7 @@ def digest_to_html(digest_response) -> str:
                     </p>
                     <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
                         Delivered to {html.escape(recipient_email)}.<br>
-                        Powered by Google Gemini 2.5 Flash &amp; Automated Scrapers.
+                        <strong>NEWS2U</strong> &bull; Powered by Google Gemini 2.5 Flash &amp; Automated Scrapers.
                     </p>
                 </td>
             </tr>

@@ -29,8 +29,8 @@ except Exception as e:
     logger.warning(f"Database initialization deferred or failed: {e}")
 
 app = FastAPI(
-    title="AI News Digest",
-    description="Automated multi-source AI news aggregator and personalized daily briefing",
+    title="NEWS2U - AI News Digest",
+    description="NEWS2U: Automated multi-source AI news aggregator and personalized daily briefing",
     version="1.0.0",
 )
 
@@ -93,7 +93,7 @@ async def health_check():
     db_info = get_database_info()
     return {
         "status": "healthy",
-        "service": "ai-news-aggregator-web",
+        "service": "NEWS2U Web",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "database": db_info,
     }
