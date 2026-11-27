@@ -282,23 +282,57 @@ async def web_unsubscribe(email: Optional[str] = None):
     )
 
 
+@app.get("/api/debug")
+async def debug_status():
+    """Inspect environment configuration and database record counts."""
+    from app.database.models import YouTubeVideo, OpenAIArticle, AnthropicArticle, Digest, Subscriber
+    from app.database.connection import get_db
+    with get_db() as session:
+        return {
+            "environment": {
+                "GEMINI_API_KEY_configured": bool(os.getenv("GEMINI_API_KEY")),
+                "MY_EMAIL": os.getenv("MY_EMAIL", "default"),
+                "APP_PASSWORD_configured": bool(os.getenv("APP_PASSWORD")),
+                "GEMINI_MODEL": os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+            },
+            "database_counts": {
+                "subscribers": session.query(Subscriber).count(),
+                "youtube_videos": session.query(YouTubeVideo).count(),
+                "openai_articles": session.query(OpenAIArticle).count(),
+                "anthropic_articles": session.query(AnthropicArticle).count(),
+                "digests": session.query(Digest).count(),
+                "unsent_digests": session.query(Digest).filter(Digest.sent_at.is_(None)).count(),
+            },
+        }
+
+
 @app.get("/api/cron/run")
 @app.post("/api/cron/run")
 async def trigger_cron_pipeline(secret: Optional[str] = None):
     """
     Trigger the daily scraping, ranking, and email pipeline.
-    Can be called manually from browser, via cron-job.org, or via GitHub Actions.
+    Returns lightweight JSON for cron-job.org and monitoring systems.
     """
     try:
         import asyncio
         from app.daily_runner import run_daily_pipeline
         result = await asyncio.to_thread(run_daily_pipeline, hours=24, top_n=10)
         email_info = result.get("email", {})
+        subscribers_sent = email_info.get("subscribers_sent", 0)
+        articles_count = email_info.get("articles_count", 0)
+        digests_created = result.get("digests", {}).get("processed", 0)
+        is_success = bool(result.get("success") and subscribers_sent > 0)
+        msg = (
+            f"Digest delivered to {subscribers_sent} subscriber(s) with {articles_count} articles"
+            if is_success
+            else (result.get("error") or email_info.get("message") or "Pipeline completed with 0 emails sent")
+        )
         return {
-            "success": True,
-            "message": "Daily digest pipeline executed successfully",
-            "subscribers_sent": email_info.get("subscribers_sent", 1),
-            "articles_count": email_info.get("articles_count", 0),
+            "success": is_success,
+            "message": msg,
+            "subscribers_sent": subscribers_sent,
+            "articles_count": articles_count,
+            "digests_created": digests_created,
         }
     except Exception as e:
         logger.error(f"Cron pipeline execution failed: {e}")

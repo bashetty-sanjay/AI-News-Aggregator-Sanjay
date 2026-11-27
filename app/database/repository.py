@@ -268,13 +268,6 @@ class Repository:
         if existing:
             return None
 
-        if published_at:
-            if published_at.tzinfo is None:
-                published_at = published_at.replace(tzinfo=timezone.utc)
-            created_at = published_at
-        else:
-            created_at = datetime.now(timezone.utc)
-
         digest = Digest(
             id=digest_id,
             article_type=article_type,
@@ -282,7 +275,7 @@ class Repository:
             url=url,
             title=title,
             summary=summary,
-            created_at=created_at,
+            created_at=datetime.now(timezone.utc),
         )
         self.session.add(digest)
         self.session.commit()
@@ -298,6 +291,19 @@ class Repository:
             query = query.filter(Digest.sent_at.is_(None))
 
         digests = query.order_by(Digest.created_at.desc()).all()
+
+        # If no unsent digests found in narrow window, search wider (30 days) of unsent digests
+        if not digests and hours < 720:
+            wide_cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+            wide_query = self.session.query(Digest).filter(Digest.created_at >= wide_cutoff)
+            if exclude_sent:
+                wide_query = wide_query.filter(Digest.sent_at.is_(None))
+            digests = wide_query.order_by(Digest.created_at.desc()).all()
+
+        # If STILL no unsent digests, fallback to latest digests (even if previously sent,
+        # ensuring subscribers always receive a high-value daily digest)
+        if not digests:
+            digests = self.session.query(Digest).order_by(Digest.created_at.desc()).limit(15).all()
 
         return [
             {

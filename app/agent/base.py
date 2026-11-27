@@ -38,7 +38,7 @@ class BaseAgent(ABC):
     ) -> Optional[T]:
         if self.provider == "gemini":
             from google.genai import types
-            models_to_try = [self.model, "gemini-2.5-flash-lite", "gemini-2.0-flash"]
+            models_to_try = [self.model, "gemini-1.5-flash"]
             # Deduplicate while preserving order
             models_to_try = list(dict.fromkeys(models_to_try))
 
@@ -47,7 +47,7 @@ class BaseAgent(ABC):
 
             last_error = None
             for model_candidate in models_to_try:
-                for attempt in range(3):
+                for attempt in range(2):
                     try:
                         response = self.gemini_client.models.generate_content(
                             model=model_candidate,
@@ -67,12 +67,8 @@ class BaseAgent(ABC):
                         last_error = e
                         err_str = str(e)
                         if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                            delay = 7.0
-                            delay_match = re.search(r"retry in (\d+(?:\.\d+)?)s", err_str)
-                            if delay_match:
-                                delay = min(float(delay_match.group(1)) + 2.0, 25.0)
-                            time.sleep(delay)
-                            continue  # retry current model
+                            time.sleep(3.0)
+                            continue  # retry current model once
                         elif "503" in err_str or "high demand" in err_str.lower():
                             break  # try next model candidate
                         else:

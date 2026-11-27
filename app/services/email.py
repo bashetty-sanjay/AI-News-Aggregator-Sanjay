@@ -9,20 +9,21 @@ import markdown
 load_dotenv()
 
 MY_EMAIL = os.getenv("MY_EMAIL")
-RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", MY_EMAIL)
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL") or MY_EMAIL
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 
 
 def send_email(subject: str, body_text: str, body_html: str = None, recipients: list = None):
-    sender_email = os.getenv("MY_EMAIL") or MY_EMAIL
-    app_password = os.getenv("APP_PASSWORD") or APP_PASSWORD
-    default_recipient = os.getenv("RECIPIENT_EMAIL") or sender_email
+    sender_email = (os.getenv("MY_EMAIL") or MY_EMAIL or "").strip()
+    raw_app_password = os.getenv("APP_PASSWORD") or APP_PASSWORD or ""
+    app_password = raw_app_password.replace(" ", "").strip()
+    default_recipient = (os.getenv("RECIPIENT_EMAIL") or sender_email).strip()
 
     if recipients is None:
         recipients = [default_recipient]
 
-    recipients = [r for r in recipients if r is not None]
-    if not recipients or not recipients[0]:
+    recipients = [r for r in recipients if r is not None and r.strip()]
+    if not recipients:
         raise ValueError("No valid recipient email provided. Please set RECIPIENT_EMAIL or MY_EMAIL in .env")
 
     if not sender_email:
@@ -33,7 +34,6 @@ def send_email(subject: str, body_text: str, body_html: str = None, recipients: 
             "To send emails via Gmail SMTP, please generate a 16-character Google App Password "
             "from https://myaccount.google.com/apppasswords and set APP_PASSWORD in your .env file."
         )
-    app_password = app_password.replace(" ", "").strip()
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject

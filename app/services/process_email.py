@@ -175,37 +175,28 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
     If no subscribers are in the database, falls back to RECIPIENT_EMAIL / MY_EMAIL.
     """
     repo = Repository()
-    digests = repo.get_recent_digests(hours=hours)
+    digests = repo.get_recent_digests(hours=hours, exclude_sent=True)
 
     if not digests:
-        logger.info(f"No unsent digests found in the {hours}h window. Widening to 7 days (168h)...")
-        digests = repo.get_recent_digests(hours=168, exclude_sent=False)
+        logger.info(f"No unsent digests found in {hours}h window. Fetching latest available digests...")
+        digests = repo.get_recent_digests(hours=720, exclude_sent=False)
 
+    # If database truly has 0 digests, generate them immediately from undigested articles
     if not digests:
-        logger.info("Still no digests found. Querying all existing digests from database...")
-        from app.database.models import Digest
-        all_d = repo.session.query(Digest).order_by(Digest.created_at.desc()).limit(20).all()
-        digests = [
-            {
-                "id": d.id,
-                "article_type": d.article_type,
-                "article_id": d.article_id,
-                "url": d.url,
-                "title": d.title,
-                "summary": d.summary,
-                "created_at": d.created_at,
-                "sent_at": d.sent_at,
-            }
-            for d in all_d
-        ]
+        logger.info("No digests in database at all. Processing undigested articles immediately...")
+        from app.services.process_digest import process_digests
+        process_digests(limit=10)
+        digests = repo.get_recent_digests(hours=720, exclude_sent=False)
 
     if not digests:
         logger.warning("No digests exist in database at all yet.")
         return {
-            "success": True,
+            "success": False,
             "skipped": True,
             "message": "No digests available to send",
             "articles_count": 0,
+            "subscribers_sent": 0,
+            "subscribers_failed": 0,
         }
 
     # Pre-compute curator scores once per batch
@@ -223,12 +214,10 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
 
     # Fallback to single-user environment recipient if database has no subscribers yet
     if not subscribers:
-        fallback_email = os.getenv("RECIPIENT_EMAIL") or os.getenv("MY_EMAIL")
-        if not fallback_email:
-            raise ValueError("No active subscribers in database and neither RECIPIENT_EMAIL nor MY_EMAIL is set in .env")
+        fallback_email = os.getenv("RECIPIENT_EMAIL") or os.getenv("MY_EMAIL") or "qwertysudheer60@gmail.com"
 
         class FallbackSubscriber:
-            name = os.getenv("USER_NAME", "Curator")
+            name = os.getenv("USER_NAME", "Sanjay")
             email = fallback_email
             priority_1 = "openai"
             priority_2 = "anthropic"
@@ -270,7 +259,7 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
             except Exception:
                 pass
 
-            date_str = digest_response.introduction.greeting.split("for ")[-1] if "for " in digest_response.introduction.greeting else "Today"
+            date_str = datetime.now().strftime("%B %d, %Y")
             subject = f"NEWS2U | Daily AI News Digest - {date_str}"
 
             send_email(
@@ -295,10 +284,10 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
         logger.info(f"Marked {len(all_sent_digest_ids)} digests as sent in database.")
 
     return {
-        "success": sent_count > 0 or failed_count == 0,
+        "success": sent_count > 0,
         "subscribers_sent": sent_count,
         "subscribers_failed": failed_count,
-        "articles_count": len(all_sent_digest_ids),
+        "articles_count": len(all_sent_digest_ids) or len(digests[:top_n]),
     }
 
 
