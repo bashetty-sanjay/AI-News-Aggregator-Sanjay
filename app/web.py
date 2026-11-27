@@ -293,10 +293,12 @@ async def trigger_cron_pipeline(secret: Optional[str] = None):
         import asyncio
         from app.daily_runner import run_daily_pipeline
         result = await asyncio.to_thread(run_daily_pipeline, hours=24, top_n=10)
+        email_info = result.get("email", {})
         return {
             "success": True,
             "message": "Daily digest pipeline executed successfully",
-            "result": result,
+            "subscribers_sent": email_info.get("subscribers_sent", 1),
+            "articles_count": email_info.get("articles_count", 0),
         }
     except Exception as e:
         logger.error(f"Cron pipeline execution failed: {e}")
