@@ -47,9 +47,33 @@ def send_email(subject: str, body_text: str, body_html: str = None, recipients: 
         part2 = MIMEText(body_html, "html")
         msg.attach(part2)
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(sender_email, app_password)
-        smtp.sendmail(sender_email, recipients, msg.as_string())
+    sent = False
+    last_err = None
+
+    # Strategy 1: Try Port 587 with STARTTLS (recommended for cloud hosts like Render)
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.ehlo()
+            smtp.login(sender_email, app_password)
+            smtp.sendmail(sender_email, recipients, msg.as_string())
+            sent = True
+    except Exception as e:
+        last_err = e
+
+    # Strategy 2: Fallback to Port 465 with SSL
+    if not sent:
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as smtp:
+                smtp.login(sender_email, app_password)
+                smtp.sendmail(sender_email, recipients, msg.as_string())
+                sent = True
+        except Exception as e:
+            last_err = e
+
+    if not sent:
+        raise RuntimeError(f"Could not deliver email via Gmail SMTP (ports 587 & 465 failed): {last_err}")
 
 
 def markdown_to_html(markdown_text: str) -> str:

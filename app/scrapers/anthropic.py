@@ -26,7 +26,7 @@ class AnthropicScraper(BaseScraper):
     def url_to_markdown(self, url: str) -> Optional[str]:
         try:
             response = requests.get(
-                url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30
+                url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10
             )
             response.raise_for_status()
             html = response.text
