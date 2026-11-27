@@ -56,6 +56,18 @@ def run_daily_pipeline(hours: int = 24, top_n: int = 10) -> dict:
 
         logger.info("\n[1/5] Scraping articles from sources...")
         scraping_results = run_scrapers(hours=hours)
+        total_scraped = (
+            len(scraping_results.get("youtube", []))
+            + len(scraping_results.get("openai", []))
+            + len(scraping_results.get("anthropic", []))
+        )
+        if total_scraped < 3:
+            logger.info(f"Only {total_scraped} items found in {hours}h window. Widening search window to 168 hours (7 days)...")
+            wider = run_scrapers(hours=168)
+            for k in ("youtube", "openai", "anthropic"):
+                combined = scraping_results.get(k, []) + wider.get(k, [])
+                scraping_results[k] = combined
+
         results["scraping"] = {
             "youtube": len(scraping_results.get("youtube", [])),
             "openai": len(scraping_results.get("openai", [])),

@@ -178,11 +178,33 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
     digests = repo.get_recent_digests(hours=hours)
 
     if not digests:
-        logger.info("No new digests found in the specified window.")
+        logger.info(f"No unsent digests found in the {hours}h window. Widening to 7 days (168h)...")
+        digests = repo.get_recent_digests(hours=168, exclude_sent=False)
+
+    if not digests:
+        logger.info("Still no digests found. Querying all existing digests from database...")
+        from app.database.models import Digest
+        all_d = repo.session.query(Digest).order_by(Digest.created_at.desc()).limit(20).all()
+        digests = [
+            {
+                "id": d.id,
+                "article_type": d.article_type,
+                "article_id": d.article_id,
+                "url": d.url,
+                "title": d.title,
+                "summary": d.summary,
+                "created_at": d.created_at,
+                "sent_at": d.sent_at,
+            }
+            for d in all_d
+        ]
+
+    if not digests:
+        logger.warning("No digests exist in database at all yet.")
         return {
             "success": True,
             "skipped": True,
-            "message": "No new digests available",
+            "message": "No digests available to send",
             "articles_count": 0,
         }
 
