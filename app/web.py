@@ -286,24 +286,25 @@ async def web_unsubscribe(email: Optional[str] = None):
 async def debug_status():
     """Inspect environment configuration and database record counts."""
     from app.database.models import YouTubeVideo, OpenAIArticle, AnthropicArticle, Digest, Subscriber
-    from app.database.connection import get_db
-    with get_db() as session:
-        return {
-            "environment": {
-                "GEMINI_API_KEY_configured": bool(os.getenv("GEMINI_API_KEY")),
-                "MY_EMAIL": os.getenv("MY_EMAIL", "default"),
-                "APP_PASSWORD_configured": bool(os.getenv("APP_PASSWORD")),
-                "GEMINI_MODEL": os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
-            },
-            "database_counts": {
-                "subscribers": session.query(Subscriber).count(),
-                "youtube_videos": session.query(YouTubeVideo).count(),
-                "openai_articles": session.query(OpenAIArticle).count(),
-                "anthropic_articles": session.query(AnthropicArticle).count(),
-                "digests": session.query(Digest).count(),
-                "unsent_digests": session.query(Digest).filter(Digest.sent_at.is_(None)).count(),
-            },
-        }
+    from app.database.repository import Repository
+    repo = Repository()
+    session = repo.session
+    return {
+        "environment": {
+            "GEMINI_API_KEY_configured": bool(os.getenv("GEMINI_API_KEY")),
+            "MY_EMAIL": os.getenv("MY_EMAIL", "not_set"),
+            "APP_PASSWORD_configured": bool(os.getenv("APP_PASSWORD")),
+            "GEMINI_MODEL": os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+        },
+        "database_counts": {
+            "subscribers": session.query(Subscriber).count(),
+            "youtube_videos": session.query(YouTubeVideo).count(),
+            "openai_articles": session.query(OpenAIArticle).count(),
+            "anthropic_articles": session.query(AnthropicArticle).count(),
+            "digests": session.query(Digest).count(),
+            "unsent_digests": session.query(Digest).filter(Digest.sent_at.is_(None)).count(),
+        },
+    }
 
 
 @app.get("/api/cron/run")
