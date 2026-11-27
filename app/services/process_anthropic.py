@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from app.scrapers.anthropic import AnthropicScraper
 from app.database.repository import Repository
 from .base import BaseProcessService
@@ -14,10 +14,16 @@ class AnthropicMarkdownProcessor(BaseProcessService):
         return self.repo.get_anthropic_articles_without_markdown(limit=limit)
 
     def process_item(self, item) -> Optional[str]:
-        return self.scraper.url_to_markdown(item.url)
+        raw = self.scraper.url_to_markdown(item.url)
+        if raw is None:
+            return None
+        if hasattr(raw, "text_content"):
+            return str(raw.text_content)
+        return str(raw)
 
-    def save_result(self, item, result: str) -> bool:
-        return self.repo.update_anthropic_article_markdown(item.guid, result)
+    def save_result(self, item, result: Any) -> bool:
+        clean_text = str(result.text_content) if hasattr(result, "text_content") else str(result)
+        return self.repo.update_anthropic_article_markdown(item.guid, clean_text)
 
 
 def process_anthropic_markdown(limit: Optional[int] = None) -> dict:

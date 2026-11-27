@@ -163,13 +163,22 @@ class Repository:
             query = query.limit(limit)
         return query.all()
 
-    def update_anthropic_article_markdown(self, guid: str, markdown: str) -> bool:
-        article = self.session.query(AnthropicArticle).filter_by(guid=guid).first()
-        if article:
-            article.markdown = markdown
-            self.session.commit()
-            return True
-        return False
+    def update_anthropic_article_markdown(self, guid: str, markdown: Any) -> bool:
+        try:
+            article = self.session.query(AnthropicArticle).filter_by(guid=guid).first()
+            if article:
+                clean_md = (
+                    str(markdown.text_content)
+                    if hasattr(markdown, "text_content")
+                    else str(markdown or "")
+                )
+                article.markdown = clean_md
+                self.session.commit()
+                return True
+            return False
+        except Exception:
+            self.session.rollback()
+            return False
 
     def get_youtube_videos_without_transcript(
         self, limit: Optional[int] = None
