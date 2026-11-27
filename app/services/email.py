@@ -26,6 +26,36 @@ def send_email(subject: str, body_text: str, body_html: str = None, recipients: 
     if not recipients:
         raise ValueError("No valid recipient email provided. Please set RECIPIENT_EMAIL or MY_EMAIL in .env")
 
+    # Strategy 0: Resend HTTPS API (Port 443) - bypasses cloud SMTP firewall blocks on Render
+    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    if resend_key:
+        try:
+            import requests
+            sender = os.getenv("RESEND_FROM") or "NEWS2U <onboarding@resend.dev>"
+            res = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": sender,
+                    "to": recipients,
+                    "subject": subject,
+                    "html": body_html or f"<pre>{body_text}</pre>",
+                    "text": body_text,
+                },
+                timeout=15,
+            )
+            if res.status_code in (200, 201):
+                return
+            else:
+                import logging
+                logging.getLogger(__name__).warning(f"Resend HTTPS failed ({res.status_code}): {res.text}. Trying SMTP...")
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Resend HTTPS error: {e}. Trying SMTP...")
+
     if not sender_email:
         raise ValueError("MY_EMAIL environment variable is not set")
     if not app_password:
