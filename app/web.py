@@ -283,6 +283,9 @@ async def web_unsubscribe(email: Optional[str] = None):
     )
 
 
+_last_pipeline_status = {"status": "idle"}
+
+
 @app.get("/api/debug")
 async def debug_status():
     """Inspect environment configuration and database record counts."""
@@ -305,6 +308,7 @@ async def debug_status():
             "digests": session.query(Digest).count(),
             "unsent_digests": session.query(Digest).filter(Digest.sent_at.is_(None)).count(),
         },
+        "pipeline_status": _last_pipeline_status,
     }
 
 
@@ -319,11 +323,28 @@ def trigger_cron_pipeline():
     from app.daily_runner import run_daily_pipeline
 
     def _execute():
+        global _last_pipeline_status
+        _last_pipeline_status = {
+            "status": "running",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+        }
         try:
             logger.info("Executing daily AI news pipeline in background thread...")
-            run_daily_pipeline(hours=24, top_n=10)
+            res = run_daily_pipeline(hours=24, top_n=10)
+            _last_pipeline_status = {
+                "status": "completed",
+                "success": res.get("success"),
+                "email": res.get("email"),
+                "error": res.get("error"),
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }
         except Exception as e:
             logger.error(f"Daily pipeline thread error: {e}", exc_info=True)
+            _last_pipeline_status = {
+                "status": "failed",
+                "error": str(e),
+                "failed_at": datetime.now(timezone.utc).isoformat(),
+            }
 
     thread = threading.Thread(target=_execute, daemon=True, name="cron_runner")
     thread.start()
