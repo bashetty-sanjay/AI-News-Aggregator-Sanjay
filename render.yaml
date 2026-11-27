@@ -13,7 +13,6 @@ services:
     name: news2u
     env: docker
     dockerfilePath: ./Dockerfile
-    dockerCommand: sh -c "uvicorn app.web:app --host 0.0.0.0 --port ${PORT:-8000}"
     plan: free
     healthCheckPath: /health
     envVars:
