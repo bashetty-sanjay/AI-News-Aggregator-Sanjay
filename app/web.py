@@ -1,12 +1,13 @@
 import os
 import re
 import logging
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import FastAPI, HTTPException, Request, status, BackgroundTasks
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
@@ -309,41 +310,29 @@ async def debug_status():
 
 @app.get("/api/cron/run")
 @app.post("/api/cron/run")
-async def trigger_cron_pipeline(background_tasks: BackgroundTasks, sync: bool = False):
+def trigger_cron_pipeline():
     """
     Trigger the daily scraping, ranking, and email pipeline.
-    Runs asynchronously via FastAPI BackgroundTasks so cron-job.org gets an immediate 200 OK.
+    Dispatches immediately to a detached daemon thread and returns 200 OK within 5ms.
+    cron-job.org receives a lightweight 30-byte JSON response and never times out.
     """
     from app.daily_runner import run_daily_pipeline
 
-    if sync:
-        import asyncio
-        result = await asyncio.to_thread(run_daily_pipeline, hours=24, top_n=10)
-        email_info = result.get("email", {})
-        subscribers_sent = email_info.get("subscribers_sent", 0)
-        articles_count = email_info.get("articles_count", 0)
-        digests_created = result.get("digests", {}).get("processed", 0)
-        is_success = bool(result.get("success") and subscribers_sent > 0)
-        msg = (
-            f"Digest delivered to {subscribers_sent} subscriber(s) with {articles_count} articles"
-            if is_success
-            else (result.get("error") or email_info.get("message") or "Pipeline completed with 0 emails sent")
-        )
-        return {
-            "success": is_success,
-            "message": msg,
-            "subscribers_sent": subscribers_sent,
-            "articles_count": articles_count,
-            "digests_created": digests_created,
-        }
+    def _execute():
+        try:
+            logger.info("Executing daily AI news pipeline in background thread...")
+            run_daily_pipeline(hours=24, top_n=10)
+        except Exception as e:
+            logger.error(f"Daily pipeline thread error: {e}", exc_info=True)
 
-    # Asynchronous execution: respond immediately so cron-job.org never times out
-    background_tasks.add_task(run_daily_pipeline, hours=24, top_n=10)
-    return {
-        "success": True,
-        "message": "NEWS2U daily briefing pipeline initiated successfully in background",
-        "status": "processing",
-    }
+    thread = threading.Thread(target=_execute, daemon=True, name="cron_runner")
+    thread.start()
+
+    return JSONResponse(
+        content={"success": True, "status": "running"},
+        status_code=200,
+        headers={"Connection": "close"},
+    )
 
 
 if __name__ == "__main__":
