@@ -63,22 +63,31 @@ class YouTubeScraper:
 
         cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
         videos = []
+        all_videos = []
 
         for entry in feed.entries:
             if "/shorts/" in entry.link:
                 continue
-            published_time = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+            published_parsed = getattr(entry, "published_parsed", None)
+            if not published_parsed:
+                continue
+            published_time = datetime(*published_parsed[:6], tzinfo=timezone.utc)
+            video_id = self._extract_video_id(entry.link)
+            video_obj = ChannelVideo(
+                title=entry.title,
+                url=entry.link,
+                video_id=video_id,
+                published_at=published_time,
+                description=entry.get("summary", ""),
+            )
+            all_videos.append(video_obj)
             if published_time >= cutoff_time:
-                video_id = self._extract_video_id(entry.link)
-                videos.append(
-                    ChannelVideo(
-                        title=entry.title,
-                        url=entry.link,
-                        video_id=video_id,
-                        published_at=published_time,
-                        description=entry.get("summary", ""),
-                    )
-                )
+                videos.append(video_obj)
+
+        # Fallback: if no videos within cutoff, return the latest 3 videos from the channel
+        if not videos and all_videos:
+            all_videos.sort(key=lambda v: v.published_at, reverse=True)
+            return all_videos[:3]
 
         return videos
 

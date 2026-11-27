@@ -199,24 +199,22 @@ class Repository:
         for d in digests:
             seen_ids.add(f"{d.article_type}:{d.article_id}")
 
-        youtube_videos = (
-            self.session.query(YouTubeVideo)
-            .filter(
-                YouTubeVideo.transcript.isnot(None),
-                YouTubeVideo.transcript != "__UNAVAILABLE__",
-            )
-            .all()
-        )
+        youtube_videos = self.session.query(YouTubeVideo).all()
         for video in youtube_videos:
             key = f"youtube:{video.video_id}"
             if key not in seen_ids:
+                content = (
+                    video.transcript
+                    if (video.transcript and video.transcript != "__UNAVAILABLE__")
+                    else (video.description or video.title)
+                )
                 articles.append(
                     {
                         "type": "youtube",
                         "id": video.video_id,
                         "title": video.title,
                         "url": video.url,
-                        "content": video.transcript or video.description or "",
+                        "content": content,
                         "published_at": video.published_at,
                     }
                 )
@@ -231,16 +229,12 @@ class Repository:
                         "id": article.guid,
                         "title": article.title,
                         "url": article.url,
-                        "content": article.description or "",
+                        "content": article.description or article.title,
                         "published_at": article.published_at,
                     }
                 )
 
-        anthropic_articles = (
-            self.session.query(AnthropicArticle)
-            .filter(AnthropicArticle.markdown.isnot(None))
-            .all()
-        )
+        anthropic_articles = self.session.query(AnthropicArticle).all()
         for article in anthropic_articles:
             key = f"anthropic:{article.guid}"
             if key not in seen_ids:
@@ -250,7 +244,7 @@ class Repository:
                         "id": article.guid,
                         "title": article.title,
                         "url": article.url,
-                        "content": article.markdown or article.description or "",
+                        "content": article.markdown or article.description or article.title,
                         "published_at": article.published_at,
                     }
                 )

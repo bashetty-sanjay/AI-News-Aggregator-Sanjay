@@ -24,6 +24,7 @@ class BaseScraper(ABC):
         now = datetime.now(timezone.utc)
         cutoff_time = now - timedelta(hours=hours)
         articles = []
+        all_articles = []
         seen_guids = set()
 
         for rss_url in self.rss_urls:
@@ -37,21 +38,26 @@ class BaseScraper(ABC):
                     continue
 
                 published_time = datetime(*published_parsed[:6], tzinfo=timezone.utc)
-                if published_time >= cutoff_time:
-                    guid = entry.get("id", entry.get("link", ""))
-                    if guid not in seen_guids:
-                        seen_guids.add(guid)
-                        articles.append(
-                            Article(
-                                title=entry.get("title", ""),
-                                description=entry.get("description", ""),
-                                url=entry.get("link", ""),
-                                guid=guid,
-                                published_at=published_time,
-                                category=entry.get("tags", [{}])[0].get("term")
-                                if entry.get("tags")
-                                else None,
-                            )
-                        )
+                guid = entry.get("id", entry.get("link", ""))
+                if guid not in seen_guids:
+                    seen_guids.add(guid)
+                    art = Article(
+                        title=entry.get("title", ""),
+                        description=entry.get("description", ""),
+                        url=entry.get("link", ""),
+                        guid=guid,
+                        published_at=published_time,
+                        category=entry.get("tags", [{}])[0].get("term")
+                        if entry.get("tags")
+                        else None,
+                    )
+                    all_articles.append(art)
+                    if published_time >= cutoff_time:
+                        articles.append(art)
+
+        # Fallback: if no articles within cutoff, return the latest available from the feed
+        if not articles and all_articles:
+            all_articles.sort(key=lambda a: a.published_at, reverse=True)
+            return all_articles[:6]
 
         return articles
