@@ -291,12 +291,16 @@ async def debug_status():
     """Inspect environment configuration and database record counts."""
     from app.database.models import YouTubeVideo, OpenAIArticle, AnthropicArticle, Digest, Subscriber
     from app.database.repository import Repository
+    from app.services.email import get_resend_api_key
     repo = Repository()
     session = repo.session
+    resend_key = get_resend_api_key()
+    resend_keys_found = [k for k in os.environ.keys() if "resend" in k.lower()]
     return {
         "environment": {
             "GEMINI_API_KEY_configured": bool(os.getenv("GEMINI_API_KEY")),
-            "RESEND_API_KEY_configured": bool(os.getenv("RESEND_API_KEY")),
+            "RESEND_API_KEY_configured": bool(resend_key),
+            "resend_keys_detected": resend_keys_found,
             "MY_EMAIL": os.getenv("MY_EMAIL", "not_set"),
             "APP_PASSWORD_configured": bool(os.getenv("APP_PASSWORD")),
             "GEMINI_MODEL": (os.getenv("GEMINI_MODEL") or "gemini-2.5-flash").strip(),

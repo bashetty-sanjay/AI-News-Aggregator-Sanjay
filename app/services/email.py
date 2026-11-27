@@ -1,16 +1,36 @@
 import os
 import smtplib
 import html
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import markdown
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 MY_EMAIL = os.getenv("MY_EMAIL")
 RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL") or MY_EMAIL
 APP_PASSWORD = os.getenv("APP_PASSWORD")
+
+
+def get_resend_api_key():
+    """Retrieve Resend API key resilient to casing, naming, or value prefix variations."""
+    key = os.getenv("RESEND_API_KEY")
+    if key and key.strip():
+        return key.strip()
+    # Check if any env var starts with the standard Resend prefix "re_"
+    for k, v in os.environ.items():
+        if v and v.strip().startswith("re_"):
+            return v.strip()
+    # Check common alternate names
+    for k, v in os.environ.items():
+        if k.strip().upper() in ("RESEND_API_KEY", "RESEND_KEY", "RESEND_API_TOKEN", "RESEND_TOKEN", "RESEND", "API_KEY") or "resend" in k.lower():
+            if v and v.strip():
+                return v.strip()
+    return None
 
 
 def send_email(subject: str, body_text: str, body_html: str = None, recipients: list = None):
@@ -27,7 +47,7 @@ def send_email(subject: str, body_text: str, body_html: str = None, recipients: 
         raise ValueError("No valid recipient email provided. Please set RECIPIENT_EMAIL or MY_EMAIL in .env")
 
     # Strategy 0: Resend HTTPS API (Port 443) - bypasses cloud SMTP firewall blocks on Render
-    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    resend_key = get_resend_api_key()
     if resend_key:
         try:
             import requests
@@ -48,13 +68,12 @@ def send_email(subject: str, body_text: str, body_html: str = None, recipients: 
                 timeout=15,
             )
             if res.status_code in (200, 201):
+                logger.info(f"Successfully sent email via Resend to {recipients}")
                 return
             else:
-                import logging
-                logging.getLogger(__name__).warning(f"Resend HTTPS failed ({res.status_code}): {res.text}. Trying SMTP...")
+                logger.warning(f"Resend HTTPS failed ({res.status_code}): {res.text}. Trying SMTP...")
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"Resend HTTPS error: {e}. Trying SMTP...")
+            logger.warning(f"Resend HTTPS error: {e}. Trying SMTP...")
 
     if not sender_email:
         raise ValueError("MY_EMAIL environment variable is not set")
