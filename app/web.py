@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
@@ -309,14 +309,15 @@ async def debug_status():
 
 @app.get("/api/cron/run")
 @app.post("/api/cron/run")
-async def trigger_cron_pipeline(secret: Optional[str] = None):
+async def trigger_cron_pipeline(background_tasks: BackgroundTasks, sync: bool = False):
     """
     Trigger the daily scraping, ranking, and email pipeline.
-    Returns lightweight JSON for cron-job.org and monitoring systems.
+    Runs asynchronously via FastAPI BackgroundTasks so cron-job.org gets an immediate 200 OK.
     """
-    try:
+    from app.daily_runner import run_daily_pipeline
+
+    if sync:
         import asyncio
-        from app.daily_runner import run_daily_pipeline
         result = await asyncio.to_thread(run_daily_pipeline, hours=24, top_n=10)
         email_info = result.get("email", {})
         subscribers_sent = email_info.get("subscribers_sent", 0)
@@ -335,12 +336,14 @@ async def trigger_cron_pipeline(secret: Optional[str] = None):
             "articles_count": articles_count,
             "digests_created": digests_created,
         }
-    except Exception as e:
-        logger.error(f"Cron pipeline execution failed: {e}")
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"success": False, "error": str(e)},
-        )
+
+    # Asynchronous execution: respond immediately so cron-job.org never times out
+    background_tasks.add_task(run_daily_pipeline, hours=24, top_n=10)
+    return {
+        "success": True,
+        "message": "NEWS2U daily briefing pipeline initiated successfully in background",
+        "status": "processing",
+    }
 
 
 if __name__ == "__main__":
