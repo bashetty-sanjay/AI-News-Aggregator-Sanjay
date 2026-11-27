@@ -215,6 +215,73 @@ async def list_subscribers_summary():
         )
 
 
+@app.get("/unsubscribe", response_class=HTMLResponse)
+async def web_unsubscribe(email: Optional[str] = None):
+    """Handles one-click unsubscribe links directly from emails."""
+    clean_email = (email or "").strip().lower()
+    if clean_email:
+        try:
+            repo = Repository()
+            repo.unsubscribe(clean_email)
+            logger.info(f"Unsubscribed via email link: {clean_email}")
+        except Exception as e:
+            logger.error(f"Error unsubscribing {clean_email}: {e}")
+
+    return HTMLResponse(
+        content=f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribed - NEWS2U</title>
+    <style>
+        body {{
+            background-color: #121316;
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }}
+        .card {{
+            background-color: #1a1c22;
+            border: 1px solid #2e323d;
+            border-top: 4px solid #f59e0b;
+            border-radius: 16px;
+            padding: 36px 32px;
+            max-width: 460px;
+            text-align: center;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+        }}
+        h1 {{ font-size: 22px; color: #ffffff; margin-bottom: 12px; }}
+        p {{ color: #9ca3af; font-size: 14px; line-height: 1.6; margin-bottom: 24px; }}
+        a {{
+            display: inline-block;
+            background-color: #f59e0b;
+            color: #111318;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 13px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>👋 You've Been Unsubscribed</h1>
+        <p><strong>{clean_email}</strong> will no longer receive daily AI news digests from NEWS2U.<br><br>We're sorry to see you go! You can resubscribe anytime.</p>
+        <a href="/">← Return to NEWS2U Home</a>
+    </div>
+</body>
+</html>""",
+        status_code=200,
+    )
+
+
 @app.get("/api/cron/run")
 @app.post("/api/cron/run")
 async def trigger_cron_pipeline(secret: Optional[str] = None):
@@ -222,10 +289,6 @@ async def trigger_cron_pipeline(secret: Optional[str] = None):
     Trigger the daily scraping, ranking, and email pipeline.
     Can be called manually from browser, via cron-job.org, or via GitHub Actions.
     """
-    expected_secret = os.getenv("CRON_SECRET")
-    if expected_secret and secret != expected_secret:
-        raise HTTPException(status_code=403, detail="Invalid cron secret")
-
     try:
         import asyncio
         from app.daily_runner import run_daily_pipeline

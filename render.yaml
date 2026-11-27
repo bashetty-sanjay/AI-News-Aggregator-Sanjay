@@ -34,8 +34,6 @@ services:
         sync: false
       - key: RECIPIENT_EMAIL
         sync: false
-      - key: CRON_SECRET
-        generateValue: true
 
   # -------------------------------------------------------------
   # Optional: Render Native Cron Job

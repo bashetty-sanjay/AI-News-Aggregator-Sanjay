@@ -280,7 +280,8 @@ def digest_to_html(digest_response) -> str:
                     </p>
                     <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
                         Delivered to {html.escape(recipient_email)}.<br>
-                        <strong>NEWS2U</strong> &bull; Powered by Google Gemini 2.5 Flash &amp; Automated Scrapers.
+                        <strong>NEWS2U</strong> &bull; Powered by Google Gemini 2.5 Flash &amp; Automated Scrapers.<br>
+                        <a href="https://news2u.onrender.com/unsubscribe?email={html.escape(recipient_email)}" style="color: #6b7280; text-decoration: underline; font-size: 11px; display: inline-block; margin-top: 8px;">Unsubscribe from daily briefings</a>
                     </p>
                 </td>
             </tr>
