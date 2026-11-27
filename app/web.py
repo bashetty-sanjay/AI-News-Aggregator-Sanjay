@@ -294,7 +294,7 @@ async def debug_status():
             "GEMINI_API_KEY_configured": bool(os.getenv("GEMINI_API_KEY")),
             "MY_EMAIL": os.getenv("MY_EMAIL", "not_set"),
             "APP_PASSWORD_configured": bool(os.getenv("APP_PASSWORD")),
-            "GEMINI_MODEL": os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+            "GEMINI_MODEL": (os.getenv("GEMINI_MODEL") or "gemini-2.5-flash").strip(),
         },
         "database_counts": {
             "subscribers": session.query(Subscriber).count(),

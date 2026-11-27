@@ -11,15 +11,16 @@ T = TypeVar("T", bound=BaseModel)
 
 class BaseAgent(ABC):
     def __init__(self, default_openai_model: str = "gpt-4o-mini", default_gemini_model: str = "gemini-2.5-flash"):
-        self.gemini_key = os.getenv("GEMINI_API_KEY")
-        self.openai_key = os.getenv("OPENAI_API_KEY")
+        self.gemini_key = (os.getenv("GEMINI_API_KEY") or "").strip() or None
+        self.openai_key = (os.getenv("OPENAI_API_KEY") or "").strip() or None
 
         # Prioritize Gemini if GEMINI_API_KEY is configured
         if self.gemini_key:
             from google import genai
             self.provider = "gemini"
             self.gemini_client = genai.Client(api_key=self.gemini_key)
-            self.model = os.getenv("GEMINI_MODEL", default_gemini_model)
+            raw_model = os.getenv("GEMINI_MODEL") or default_gemini_model
+            self.model = raw_model.strip()
         elif self.openai_key:
             from openai import OpenAI
             self.provider = "openai"
