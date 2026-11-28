@@ -1,0 +1,12 @@
+{
+  "name": "ai-news-aggregator",
+  "version": "1.0.0",
+  "description": "NEWS2U - Autonomous AI News Aggregator & Daily Digest",
+  "scripts": {
+    "start": "python -m uvicorn app.web:app --reload --port 8000",
+    "dev": "python -m uvicorn app.web:app --reload --port 8000",
+    "send": "python -m app.daily_runner",
+    "run": "python -m app.daily_runner",
+    "subscribers": "python scripts/view_subscribers.py"
+  }
+}
